@@ -1,68 +1,49 @@
-# My CDK Lambda A-rin Project
+# 私のCDK Lambda A-rinプロジェクト
 
-This project demonstrates how to build and deploy an AI chatbot using AWS CDK, Python Lambda, and Amazon Bedrock.
-It covers end-to-end setup from custom VPC to Lambda function deployment.
+このプロジェクトは、AWS CDK、Python Lambda、およびAmazon Bedrockを使用してAIチャットボットを構築およびデプロイする方法を示すものです。カスタムVPCのセットアップからLambda関数のデプロイまで、エンドツーエンドの構築をカバーしています。
 
-## Technologies Used:
-- AWS CDK (Python)
-- AWS Lambda
-- Amazon Bedrock (Claude model)
-- AWS VPC, Subnet, Internet Gateway, Route Tables
-- Python 3.9+
-- pipenv
+## 使用技術
 
-## Project Structure:
-- `A-rin_lambda/A-rinApp.py`: The core Lambda function code for the chatbot.
-- `my_cdk_lambda_project/my_cdk_lambda_project_stack.py`: CDK stack definition for deploying Lambda and IAM roles.
+* AWS CDK (Python)
+* AWS Lambda
+* Amazon Bedrock (Claudeモデル)
+* AWS VPC, サブネット, インターネットゲートウェイ, ルートテーブル
+* Python 3.9+
+* pipenv
 
-## Setup & Deployment:
-1.  **VPC and EC2 Setup**: Configured a custom VPC, public subnet, Internet Gateway, and an EC2 instance (`t2.small`) with an appropriate IAM role.
-2.  **CDK Environment Setup**: Installed Node.js, npm, pipenv, AWS CDK CLI on the EC2 instance.
-3.  **CDK Bootstrap**: Ran `cdk bootstrap` to prepare the AWS environment.
-4.  **Lambda Deployment**: Used `cdk deploy` to deploy the Lambda function and associated IAM roles.
+## プロジェクト構造
 
-## Troubleshooting Log: (For Findy & Blog)
+* `A-rin_lambda/A-rinApp.py`: チャットボットのコアとなるLambda関数コード。
+* `my_cdk_lambda_project/my_cdk_lambda_project_stack.py`: Lambda関数とIAMロールをデプロイするためのCDKスタック定義。
 
-This project encountered several challenges during setup and deployment. Documenting these issues and their resolutions to showcase problem-solving skills.
+## セットアップとデプロイ
 
-### 1. CDK Bootstrap IAM Permission Error
-- **Error**: `AccessDenied` for `ecr:SetRepositoryPolicy`, SSM Parameter Store.
-- **Cause**: Insufficient permissions on the attached EC2 IAM role (`cdk-dev-instance-role`).
-- **Resolution**: Added `AdministratorAccess` managed policy to `cdk-dev-instance-role`.
+1.  **VPCとEC2のセットアップ**: カスタムVPC、パブリックサブネット、インターネットゲートウェイ、および適切なIAMロールを持つEC2インスタンス（`t2.small`）を設定しました。
+2.  **CDK開発環境のセットアップ**: EC2インスタンスにNode.js、npm、pipenv、AWS CDK CLIをインストールしました。
+3.  **CDKブートストラップ**: `cdk bootstrap` を実行し、AWS環境の準備を行いました。
+4.  **Lambdaデプロイ**: `cdk deploy` を使用してLambda関数と関連するIAMロールをデプロイしました。
 
-### 2. `pip: command not found`
-- **Error**: `-bash: pip: command not found` during `pip install pipenv`.
-- **Cause**: `pip` was not installed by default on Amazon Linux 2023.
-- **Resolution**: Ran `sudo yum install python3-pip -y`.
+## 次のステップ
 
-### 3. `cdk synth` `--app is required` Error
-- **Error**: `--app is required...`
-- **Cause**: Executing `cdk synth` from a subdirectory, not the project root.
-- **Resolution**: Navigated to `/home/ec2-user/my-cdk-lambda-project`.
+優先度順に記載しています。
 
-### 4. `cdk synth` `ModuleNotFoundError: No module named 'aws_cdk'`
-- **Error**: Python `ModuleNotFoundError`.
-- **Cause**: Python virtual environment (`.venv`) was not active or CDK libraries not installed within it.
-- **Resolution**: Activated virtual environment (`source .venv/bin/activate`) and ran `pip install -r requirements.txt`.
-
-### 5. Git Authentication Failed (`Password authentication is not supported`)
-- **Error**: `remote: Invalid username or token. Password authentication is not supported for Git operations.`
-- **Cause**: GitHub no longer supports password authentication for Git operations; Personal Access Token (PAT) is required.
-- **Resolution**: Generated a PAT with `repo` scope on GitHub, and configured Git to use it by embedding it in the remote URL: `git remote set-url origin https://canta1sei:YOUR_PAT@github.com/canta1sei/my-cdk-lambda-arin-project.git`.
-
-### 6. `fatal: repository 'https://github.com/cantatsei/my-cdk-lambda-arin-project.git/' not found`
-- **Error**: Repository not found despite correct URL, often after PAT embedding attempt.
-- **Cause**: Typo in the username within the repository path in the URL (e.g., `github.com/cantatsei/...` instead of `github.com/canta1sei/...`).
-- **Resolution**: Ensured the GitHub username in the URL's path matched the one in the authentication part: `https://canta1sei:YOUR_PAT@github.com/canta1sei/my-cdk-lambda-arin-project.git`.
-
-### 7. Git Push Rejected (`remote contains work you do not have locally`)
-- **Error**: `! [rejected] main -> main (fetch first)` because remote contains changes (e.g., auto-generated README/gitignore).
-- **Cause**: Local and remote histories diverged (local had initial CDK commit, remote had auto-generated files).
-- **Resolution**: Pulled remote changes with `git pull origin main --allow-unrelated-histories --no-rebase` and resolved merge conflicts (specifically in `.gitignore` and `README.md`).
-
-### Next Steps:
-- Resolve `KeyError: 'sessionState'` in Lambda function.
-- Complete Lambda function testing.
-- Consider adding API Gateway for external access.
-- Finalize `README.md` content and add screenshots.
-- Clean up AWS resources after project completion.
+1.  **Lambda関数の `KeyError: 'sessionState'` を解決する。**
+    * **最優先事項**です。これが解決しないと、チャットボットが正常に動作しません。
+2.  **Lambda関数のテストを完了する。**
+    * 上記エラー解決後、チャットボットが意図通りに機能するかを徹底的に確認します。
+3.  **Pythonバージョンアップ対応（計画）**
+    * 現在Python 3.9でデプロイされているLambda関数のランタイムを、AWS Lambdaで推奨されるPython 3.12へアップグレードする計画です。
+    * **対応予定手順:**
+        1.  **CDKコードの更新**: `my_cdk_lambda_project/my_cdk_lambda_project_stack.py` 内のLambdaランタイムを `lambda_.Runtime.PYTHON_3_12` に変更します。
+        2.  **EC2インスタンスのPython環境更新**:
+            * EC2インスタンスにPython 3.12をインストールします (`sudo dnf install python3.12 -y` など)。
+            * `pipenv` を使用して、プロジェクトの仮想環境をPython 3.12で再構築します (`pipenv --rm` 後、`pipenv --python 3.12 install`)。
+            * 仮想環境をアクティブ化し (`pipenv shell`)、必要な依存関係を再インストールします (`pip install -r requirements.txt`)。
+        3.  **Lambda関数の依存関係更新**: Lambda関数 (`A-rin_lambda`) 独自の依存関係がある場合、それらもPython 3.12環境で更新します。
+        4.  **CDKの再デプロイ**: `cdk deploy` を実行し、Lambda関数のランタイム変更をAWS環境に反映させます。
+4.  **必要に応じてAPI Gatewayを追加し、外部からアクセス可能にする。**
+    * チャットボットを外部から利用可能にするためのAPIエンドポイントの構築です。
+5.  **`README.md` の内容を最終調整し、スクリーンショットを追加する。**
+    * プロジェクトの完了度合いに合わせて、より詳細な説明や、動作画面のスクリーンショットなどを追加し、見栄えを良くします。Findyへのアピールにも繋がります。
+6.  **プロジェクト完了後、AWSリソースをクリーンアップする。**
+    * 不要なコスト発生を防ぐため、開発・検証が完了したらリソースを削除します。
