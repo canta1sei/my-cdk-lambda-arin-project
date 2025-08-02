@@ -1,0 +1,23 @@
+{
+  "messageVersion": "1.0",
+  "invocationSource": "DialogCodeHook",
+  "userId": "user-12345",
+  "sessionState": {
+    "sessionAttributes": {},
+    "intent": {
+      "name": "ArinChat",
+      "slots": {},
+      "state": "InProgress"
+    },
+    "originatingRequestId": "abc-123"
+  },
+  "inputTranscript": "今日の天気は？",
+  "bot": {
+    "aliasId": "TSTALIASID",
+    "aliasName": "TestBotAlias",
+    "name": "ArinChatbot",
+    "id": "BOT-ID-123",
+    "localeId": "ja_JP",
+    "version": "DRAFT"
+  }
+}
