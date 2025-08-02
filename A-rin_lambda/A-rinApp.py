@@ -121,7 +121,7 @@ def lambda_handler(event, context):
                     "type": "Close"
                 },
                 "intent": {
-                    "name": event['sessionState']['intent']['name'],
+                    "name": event.get('sessionState', {}).get('intent', {}).get('name'),
                     "state": "Fulfilled"
                 }
             },
@@ -141,7 +141,7 @@ def lambda_handler(event, context):
                     "type": "Close"
                 },
                 "intent": {
-                    "name": event['sessionState']['intent']['name'],
+                    "name": event.get('sessionState', {}).get('intent', {}).get('name'),
                     "state": "Failed"
                 }
             },
