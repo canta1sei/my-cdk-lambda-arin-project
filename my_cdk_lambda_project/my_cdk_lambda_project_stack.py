@@ -1,7 +1,8 @@
 from aws_cdk import (
     aws_lambda as lambda_,
     aws_iam as iam,
-    Stack
+    Stack,
+    Duration # Durationをインポート
 )
 from constructs import Construct
 
@@ -32,6 +33,7 @@ class MyCdkLambdaProjectStack(Stack):
             handler="A-rinApp.lambda_handler", # 'ファイル名.ハンドラー関数名'
             code=lambda_.Code.from_asset("A-rin_lambda"), # ★ここをA-rin_lambdaディレクトリに設定
             role=lambda_role,
+            timeout=Duration.seconds(30), # タイムアウトを30秒に設定
             environment={
                 # 必要に応じて環境変数を設定
             }
