@@ -6,7 +6,7 @@
 
 * AWS CDK (Python)
 * AWS Lambda
-* Amazon Bedrock (Claudeモデル)
+* Google Gemini API
 * AWS VPC, サブネット, インターネットゲートウェイ, ルートテーブル
 * Python 3.9+
 * pipenv
@@ -32,6 +32,9 @@
     *   `A-rin_lambda/A-rinApp.py` に `event.get()` を使用する修正を適用し、デプロイ済み。
 *   **Lambda関数のタイムアウトを解決する。**
     *   `my_cdk_lambda_project/my_cdk_lambda_project_stack.py` に `timeout=Duration.seconds(30)` を追加し、デプロイ済み。
+*   **LambdaのAI機能をAWS BedrockからGoogle Geminiへ移行する。**
+    *   `A-rin_lambda/A-rinApp.py` をGoogle Gemini APIを使用するように修正し、`my_cdk_lambda_project/my_cdk_lambda_project_stack.py` からBedrock関連の権限を削除、`requirements.txt` を更新しデプロイ済み。
+    *   **注記: 現在、この機能の稼働確認はまだ完了していません。**
 
 ## 次のステップ
 
