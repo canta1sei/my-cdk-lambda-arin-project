@@ -18,8 +18,7 @@ class MyCdkLambdaProjectStack(Stack):
             assumed_by=iam.ServicePrincipal("lambda.amazonaws.com"),
             managed_policies=[
                 iam.ManagedPolicy.from_aws_managed_policy_name("service-role/AWSLambdaBasicExecutionRole"),
-                # Bedrockへのアクセス権限
-                iam.ManagedPolicy.from_aws_managed_policy_name("AmazonBedrockFullAccess"), # またはより限定的なポリシー
+                # Bedrockへのアクセス権限は不要になったので削除
             ]
         )
 
@@ -35,6 +34,6 @@ class MyCdkLambdaProjectStack(Stack):
             role=lambda_role,
             timeout=Duration.seconds(30), # タイムアウトを30秒に設定
             environment={
-                # 必要に応じて環境変数を設定
+                "GEMINI_API_KEY": os.environ.get("GEMINI_API_KEY") # 環境変数を追加
             }
         )
