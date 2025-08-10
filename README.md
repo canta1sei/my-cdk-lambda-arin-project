@@ -1,60 +1,71 @@
 # 私のCDK Lambda A-rinプロジェクト
 
-このプロジェクトは、AWS CDK、Python Lambda、およびAmazon Bedrockを使用してAIチャットボットを構築およびデプロイする方法を示すものです。カスタムVPCのセットアップからLambda関数のデプロイまで、エンドツーエンドの構築をカバーしています。
+このプロジェクトは、AWS CDKとPythonを使用して、Google Gemini APIを活用したAIチャットボットを構築・デプロイするサンプルです。
 
-## 使用技術
+## 主要技術
 
-* AWS CDK (Python)
-* AWS Lambda
-* Google Gemini API
-* AWS VPC, サブネット, インターネットゲートウェイ, ルートテーブル
-* Python 3.9+
-* pipenv
+*   AWS CDK (Python)
+*   AWS Lambda
+*   Google Gemini API
+*   Python 3.9
+*   Docker
 
 ## プロジェクト構造
 
-* `A-rin_lambda/A-rinApp.py`: チャットボットのコアとなるLambda関数コード。
-* `my_cdk_lambda_project/my_cdk_lambda_project_stack.py`: Lambda関数とIAMロールをデプロイするためのCDKスタック定義。
-* `tests/events/`: Lambda関数のテストイベントJSONファイルを格納するディレクトリ。
+*   `A-rin_lambda/`: Lambda関数のソースコードと依存関係を格納するディレクトリ。
+    *   `A-rinApp.py`: チャットボットのコアとなるLambda関数コード。
+    *   `requirements.txt`: Lambda関数が使用するPythonライブラリ。
+*   `my_cdk_lambda_project/`: AWSインフラを定義するCDKコード。
+    *   `my_cdk_lambda_project_stack.py`: Lambda関数とIAMロールをデプロイするためのCDKスタック定義。
+*   `app.py`: CDKアプリケーションのエントリーポイント。
+*   `cdk.json`: CDKの設定ファイル。
+*   `requirements.txt`: CDKアプリケーション自体の実行に必要なPythonライブラリ。
 
-## セットアップとデプロイ
+## 動作に必要な環境 (Prerequisites)
 
-1.  **VPCとEC2のセットアップ**: カスタムVPC、パブリックサブネット、インターネットゲートウェイ、および適切なIAMロールを持つEC2インスタンス（`t2.small`）を設定しました。
-2.  **CDK開発環境のセットアップ**: EC2インスタンスにNode.js、npm、pipenv、AWS CDK CLIをインストールしました。
-3.  **CDKブートストラップ**: `cdk bootstrap` を実行し、AWS環境の準備を行いました。
-4.  **依存関係のインストール**: `pipenv install` を実行し、プロジェクトの依存関係をインストールします。
-5.  **CDK設定の更新**: `cdk.json` の `app` 設定を `"pipenv run python app.py"` に変更し、`pipenv` 仮想環境を使用するようにします。
-6.  **Lambdaデプロイ**: `cdk deploy` を使用してLambda関数と関連するIAMロールをデプロイします。
+このプロジェクトをローカル環境でセットアップ・デプロイするには、以下が必要です。
 
-## 完了したタスク
+*   AWS CLI （設定済みであること）
+*   Python 3.9 以上
+*   Python仮想環境を作成するツール (例: `venv`)
+*   Node.js と AWS CDK CLI
+*   Docker (Lambdaのライブラリをパッケージングするために**必須**です)
 
-*   **Lambda関数の `KeyError: 'sessionState'` を解決する。**
-    *   `A-rin_lambda/A-rinApp.py` に `event.get()` を使用する修正を適用し、デプロイ済み。
-*   **Lambda関数のタイムアウトを解決する。**
-    *   `my_cdk_lambda_project/my_cdk_lambda_project_stack.py` に `timeout=Duration.seconds(30)` を追加し、デプロイ済み。
-*   **LambdaのAI機能をAWS BedrockからGoogle Geminiへ移行する。**
-    *   `A-rin_lambda/A-rinApp.py` をGoogle Gemini APIを使用するように修正し、`my_cdk_lambda_project/my_cdk_lambda_project_stack.py` からBedrock関連の権限を削除、`requirements.txt` を更新しデプロイ済み。
-    *   **注記: 現在、この機能の稼働確認はまだ完了していません。**
+## セットアップとデプロイ手順
 
-## 次のステップ
+1.  **リポジトリのクローン:**
+    ```bash
+    git clone <repository-url>
+    cd my-cdk-lambda-arin-project
+    ```
 
-優先度順に記載しています。
+2.  **Python仮想環境の作成と有効化:**
+    ```bash
+    python3 -m venv .venv
+    source .venv/bin/activate
+    ```
 
-1.  **Lambda関数のテストを完了する。**
-    * テストイベントJSON (`tests/events/lex_basic_intent.json` など) を作成し、AWS CLIの `aws lambda invoke` コマンド (`fileb://` プレフィックスを使用) またはAWSコンソールからテストを実行して、チャットボットが意図通りに機能するかを徹底的に確認します。
-2.  **Pythonバージョンアップ対応（計画）**
-    * 現在Python 3.9でデプロイされているLambda関数のランタイムを、AWS Lambdaで推奨されるPython 3.12へアップグレードする計画です。
-    * **対応予定手順:**
-        1.  **CDKコードの更新**: `my_cdk_lambda_project/my_cdk_lambda_project_stack.py` 内のLambdaランタイムを `lambda_.Runtime.PYTHON_3_12` に変更します。
-        2.  **EC2インスタンスのPython環境更新**:
-            * EC2インスタンスにPython 3.12をインストールします (`sudo dnf install python3.12 -y` など)。
-            * `pipenv` を使用して、プロジェクトの仮想環境をPython 3.12で再構築します (`pipenv --rm` 後、`pipenv --python 3.12 install`)。
-            * 仮想環境をアクティブ化し (`pipenv shell`)、必要な依存関係を再インストールします (`pip install -r requirements.txt`)。
-        3.  **Lambda関数の依存関係更新**: Lambda関数 (`A-rin_lambda`) 独自の依存関係がある場合、それらもPython 3.12環境で更新します。
-        4.  **CDKの再デプロイ**: `cdk deploy` を実行し、Lambda関数のランタイム変更をAWS環境に反映させます。
-3.  **必要に応じてAPI Gatewayを追加し、外部からアクセス可能にする。**
-    * チャットボットを外部から利用可能にするためのAPIエンドポイントの構築です。
-4.  **`README.md` の内容を最終調整し、スクリーンショットを追加する。**
-    * プロジェクトの完了度合いに合わせて、より詳細な説明や、動作画面のスクリーンショットなどを追加し、見栄えを良くします。Findyへのアピールにも繋がります。
-5.  **プロジェクト完了後、AWSリソースをクリーンアップする。**
-    * 不要なコスト発生を防ぐため、開発・検証が完了したらリソースを削除します。
+3.  **CDK用の依存関係をインストール:**
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+4.  **Dockerの起動:**
+    お使いのシステムでDockerデーモンを起動してください。CDKがLambdaの依存関係をパッケージングする際に使用します。
+    (例: `sudo systemctl start docker`)
+
+5.  **環境変数の設定:**
+    Google Gemini APIのAPIキーを設定します。
+    ```bash
+    export GEMINI_API_KEY="YOUR_GEMINI_API_KEY"
+    ```
+
+6.  **CDKデプロイ:**
+    全ての準備が整ったら、以下のコマンドでAWSにスタックをデプロイします。
+    ```bash
+    cdk deploy --all
+    ```
+
+## セキュリティに関する注意
+
+APIキーのような機密情報は、環境変数として直接設定するよりも、AWS Secrets Managerなどのサービスを使用して管理することが推奨されます。本番環境で利用する場合は、より安全な方法を検討してください。
