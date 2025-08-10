@@ -1,8 +1,10 @@
+import os
 from aws_cdk import (
     aws_lambda as lambda_,
     aws_iam as iam,
     Stack,
-    Duration # Durationをインポート
+    Duration, # Durationをインポート
+    BundlingOptions
 )
 from constructs import Construct
 
@@ -30,7 +32,15 @@ class MyCdkLambdaProjectStack(Stack):
             self, "ArinChatbotHandler",
             runtime=lambda_.Runtime.PYTHON_3_9, # または適切なバージョン
             handler="A-rinApp.lambda_handler", # 'ファイル名.ハンドラー関数名'
-            code=lambda_.Code.from_asset("A-rin_lambda"), # ★ここをA-rin_lambdaディレクトリに設定
+            code=lambda_.Code.from_asset("A-rin_lambda",
+                bundling=BundlingOptions(
+                    image=lambda_.Runtime.PYTHON_3_9.bundling_image,
+                    command=[
+                        "bash", "-c",
+                        "pip install -r requirements.txt -t /asset-output && cp -au . /asset-output"
+                    ]
+                )
+            ),
             role=lambda_role,
             timeout=Duration.seconds(30), # タイムアウトを30秒に設定
             environment={

@@ -9,7 +9,7 @@ def lambda_handler(event, context):
     genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
 
     # Geminiモデルを初期化
-    model = genai.GenerativeModel('gemini-pro')
+    model = genai.GenerativeModel('gemini-2.5-flash')
 
     # ユーザーの入力を取得
     user_message = event["inputTranscript"]
