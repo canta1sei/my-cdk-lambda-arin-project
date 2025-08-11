@@ -6,6 +6,8 @@
 
 *   AWS CDK (Python)
 *   AWS Lambda
+*   AWS API Gateway
+*   AWS Secrets Manager
 *   Google Gemini API
 *   Python 3.9
 *   Docker
@@ -14,9 +16,10 @@
 
 *   `A-rin_lambda/`: Lambda関数のソースコードと依存関係を格納するディレクトリ。
     *   `A-rinApp.py`: チャットボットのコアとなるLambda関数コード。
+    *   `config.json`: モデル名などの設定ファイル。
     *   `requirements.txt`: Lambda関数が使用するPythonライブラリ。
 *   `my_cdk_lambda_project/`: AWSインフラを定義するCDKコード。
-    *   `my_cdk_lambda_project_stack.py`: Lambda関数とIAMロールをデプロイするためのCDKスタック定義。
+    *   `my_cdk_lambda_project_stack.py`: Lambda関数、API Gateway、IAMロールをデプロイするためのCDKスタック定義。
 *   `app.py`: CDKアプリケーションのエントリーポイント。
 *   `cdk.json`: CDKの設定ファイル。
 *   `requirements.txt`: CDKアプリケーション自体の実行に必要なPythonライブラリ。
@@ -54,11 +57,14 @@
     お使いのシステムでDockerデーモンを起動してください。CDKがLambdaの依存関係をパッケージングする際に使用します。
     (例: `sudo systemctl start docker`)
 
-5.  **環境変数の設定:**
-    Google Gemini APIのAPIキーを設定します。
+5.  **APIキーをSecrets Managerに保存:**
+    Google Gemini APIのAPIキーをAWS Secrets Managerに保存します。CDKスタックは、`gemini-api-key`という名前のシークレットを読み込みます。
+    
+    以下のコマンドでシークレットを作成できます。（すでに作成済みの場合は不要です）
     ```bash
-    export GEMINI_API_KEY="YOUR_GEMINI_API_KEY"
+    aws secretsmanager create-secret --name gemini-api-key --secret-string YOUR_GEMINI_API_KEY
     ```
+    ※ `YOUR_GEMINI_API_KEY` の部分を実際のAPIキーに置き換えてください。
 
 6.  **CDKデプロイ:**
     全ての準備が整ったら、以下のコマンドでAWSにスタックをデプロイします。
@@ -66,27 +72,32 @@
     cdk deploy --all
     ```
 
+## APIエンドポイント
+
+デプロイが完了すると、API Gatewayのエンドポイントが作成され、外部からHTTPリクエストでLambda関数を呼び出すことができるようになります。エンドポイントのURLは、デプロイ完了時にコンソールに出力されます。
+
+以下は、`curl`コマンドを使ってAPIエンドポイントの動作をテストする例です。
+
+```bash
+# YOUR_API_ENDPOINT_URL を、デプロイ時に出力されたURLに置き換えてください
+curl -X POST -H "Content-Type: application/json" \
+-d '{"inputTranscript": "こんにちは、あなたの名前は？"}' \
+YOUR_API_ENDPOINT_URL
+```
+
 ## セキュリティに関する注意
 
-APIキーのような機密情報は、環境変数として直接設定するよりも、AWS Secrets Managerなどのサービスを使用して管理することが推奨されます。本番環境で利用する場合は、より安全な方法を検討してください。
+このプロジェクトでは、APIキーのような機密情報を安全に管理するため、AWS Secrets Managerを利用しています。Lambda関数は実行時に動的にSecrets ManagerからAPIキーを取得するため、コードや環境変数に直接キー情報が含まれることはありません。
 
 ## 次のステップ
 
 今後の開発・改善タスクを優先度順に記載します。
 
-1.  **Lambda関数のテストを完了する**
-    *   テストイベントJSON (`tests/events/lex_basic_intent.json`) を使用して、Lambda関数が意図通りに機能するかを徹底的に確認します。
-    *   AWSコンソールからテストを実行するか、AWS CLIで以下のコマンドを実行します。
-        ```bash
-        # 事前にAWS認証情報とリージョンの設定が必要です
-        aws lambda invoke --function-name <デプロイされたLambda関数名> --payload fileb://tests/events/lex_basic_intent.json response.json
-        ```
-
-2.  **Pythonバージョンアップ対応（計画）**
+1.  **Pythonバージョンアップ対応（計画）**
     *   現在Python 3.9でデプロイされているLambda関数のランタイムを、AWS推奨のPython 3.12へアップグレードする計画です。
-    *   **対応予定手順:**
+    *   **対応予定手順:** 
         1.  **CDKコードの更新**: `my_cdk_lambda_project/my_cdk_lambda_project_stack.py` 内のLambdaランタイムを `lambda_.Runtime.PYTHON_3_12` に変更します。
-        2.  **開発環境のPython更新**:
+        2.  **開発環境のPython更新**: 
             *   開発環境にPython 3.12をインストールします。
             *   プロジェクトの仮想環境をPython 3.12で再構築します。
                 ```bash
@@ -99,14 +110,18 @@ APIキーのような機密情報は、環境変数として直接設定する�
         3.  **Lambda関数の依存関係更新**: `A-rin_lambda/requirements.txt` に記載のライブラリがPython 3.12に対応しているか確認し、必要に応じて更新します。
         4.  **CDKの再デプロイ**: `cdk deploy` を実行し、Lambda関数のランタイム変更をAWS環境に反映させます。
 
-3.  **必要に応じてAPI Gatewayを追加し、外部からアクセス可能にする**
+2.  **必要に応じてAPI Gatewayを追加し、外部からアクセス可能にする**
     *   チャットボットをWebサイトや外部アプリケーションから利用可能にするためのAPIエンドポイントを構築します。
 
-4.  **`README.md` の内容を最終調整し、スクリーンショットを追加する**
+3.  **`README.md` の内容を最終調整し、スクリーンショットを追加する**
     *   プロジェクトの完成度に合わせて、より詳細な説明や、動作画面のスクリーンショットなどを追加してドキュメントを充実させます。
 
-5.  **プロジェクト完了後、AWSリソースをクリーンアップする**
+4.  **プロジェクト完了後、AWSリソースをクリーンアップする**
     *   不要なコスト発生を防ぐため、開発・検証が完了したら`cdk destroy`コマンドを実行して、作成したすべてのAWSリソースを削除します。
         ```bash
         cdk destroy --all
         ```
+
+5.  **設定管理の改善（将来的な課題）**
+    *   現在、モデル名などの設定を簡単のために`config.json`ファイルに記述していますが、これは一時的な措置です。
+    *   本番環境やチームでの開発を見据える場合、設定値は環境変数や、AWS Systems Manager Parameter Store、AWS Secrets Managerといった、よりセキュアで管理しやすい方法に移行することを推奨します。
