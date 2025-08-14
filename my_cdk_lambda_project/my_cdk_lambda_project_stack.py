@@ -60,7 +60,12 @@ class MyCdkLambdaProjectStack(Stack):
         api = apigw.LambdaRestApi(
             self, "ArinChatbotApi",
             handler=my_lambda,
-            proxy=True
+            proxy=True,
+            default_cors_preflight_options=apigw.CorsOptions(
+                allow_origins=apigw.Cors.ALL_ORIGINS,
+                allow_methods=["POST", "OPTIONS"],
+                allow_headers=["Content-Type"]
+            )
         )
 
         # 6. APIエンドポイントURLの出力

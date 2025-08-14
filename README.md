@@ -1,42 +1,52 @@
 # 私のCDK Lambda A-rinプロジェクト
 
-このプロジェクトは、AWS CDKとPythonを使用して、Google Gemini APIを活用したAIチャットボットを構築・デプロイするサンプルです。
+このプロジェクトは、AWS CDKとReactを使用して、Google Gemini APIを活用したフルスタックAIチャットボットを構築・デプロイするサンプルです。
 
 ## 主要技術
 
-*   AWS CDK (Python)
-*   AWS Lambda
-*   AWS API Gateway
-*   AWS Secrets Manager
-*   Google Gemini API
-*   Python 3.9
-*   Docker
+*   **フロントエンド**
+    *   React (TypeScript)
+    *   Vite
+    *   axios
+*   **バックエンド**
+    *   AWS CDK (Python)
+    *   AWS Lambda
+    *   AWS API Gateway
+    *   AWS Secrets Manager
+*   **その他**
+    *   Google Gemini API
+    *   Python 3.9
+    *   Docker
 
 ## プロジェクト構造
 
-*   `A-rin_lambda/`: Lambda関数のソースコードと依存関係を格納するディレクトリ。
+*   `frontend/`: Reactで構築されたフロントエンドアプリケーション。
+    *   `src/App.tsx`: チャットUIのメインコンポーネント。
+    *   `vite.config.ts`: APIリクエストをバックエンドに転送（プロキシ）するための設定。
+*   `A-rin_lambda/`: Lambda関数のソースコードと依存関係。
     *   `A-rinApp.py`: チャットボットのコアとなるLambda関数コード。
-    *   `config.json`: モデル名などの設定ファイル。
-    *   `requirements.txt`: Lambda関数が使用するPythonライブラリ。
 *   `my_cdk_lambda_project/`: AWSインフラを定義するCDKコード。
-    *   `my_cdk_lambda_project_stack.py`: Lambda関数、API Gateway、IAMロールをデプロイするためのCDKスタック定義。
+    *   `my_cdk_lambda_project_stack.py`: Lambda, API Gateway等をデプロイするCDKスタック定義。
 *   `app.py`: CDKアプリケーションのエントリーポイント。
 *   `cdk.json`: CDKの設定ファイル。
-*   `requirements.txt`: CDKアプリケーション自体の実行に必要なPythonライブラリ。
 
 ## 動作に必要な環境 (Prerequisites)
 
-このプロジェクトをローカル環境でセットアップ・デプロイするには、以下が必要です。
-
 *   AWS CLI （設定済みであること）
 *   Python 3.9 以上
-*   Python仮想環境を作成するツール (例: `venv`)
-*   Node.js と AWS CDK CLI
+*   Node.js と npm
+*   AWS CDK CLI (`npm install -g aws-cdk`)
 *   Docker (Lambdaのライブラリをパッケージングするために**必須**です)
 
-## セットアップとデプロイ手順
+## セットアップと実行手順
 
-1.  **リポジトリのクローン:**
+このアプリケーションは、AWSにデプロイされる**バックエンド**と、ローカルで実行する**フロントエンド**で構成されます。
+
+### 1. バックエンドのセットアップとデプロイ
+
+まず、バックエンドのAWSリソースを準備・デプロイします。
+
+1.  **リポジトリのクローンと移動:**
     ```bash
     git clone <repository-url>
     cd my-cdk-lambda-arin-project
@@ -54,36 +64,51 @@
     ```
 
 4.  **Dockerの起動:**
-    お使いのシステムでDockerデーモンを起動してください。CDKがLambdaの依存関係をパッケージングする際に使用します。
-    (例: `sudo systemctl start docker`)
+    お使いのシステムでDockerデーモンを起動してください。
 
 5.  **APIキーをSecrets Managerに保存:**
-    Google Gemini APIのAPIキーをAWS Secrets Managerに保存します。CDKスタックは、`gemini-api-key`という名前のシークレットを読み込みます。
-    
-    以下のコマンドでシークレットを作成できます。（すでに作成済みの場合は不要です）
+    Google Gemini APIのキーをAWS Secrets Managerに `gemini-api-key` という名前で保存します。
     ```bash
+    # 初回のみ実行
     aws secretsmanager create-secret --name gemini-api-key --secret-string YOUR_GEMINI_API_KEY
     ```
     ※ `YOUR_GEMINI_API_KEY` の部分を実際のAPIキーに置き換えてください。
 
 6.  **CDKデプロイ:**
-    全ての準備が整ったら、以下のコマンドでAWSにスタックをデプロイします。
+    以下のコマンドでAWSにスタックをデプロイします。
     ```bash
     cdk deploy --all
     ```
+    デプロイが完了すると、`Outputs`としてAPI GatewayのエンドポイントURLが表示されます。このURLはフロントエンドの設定で使用します。
 
-## APIエンドポイント
+### 2. フロントエンドのセットアップと実行
 
-デプロイが完了すると、API Gatewayのエンドポイントが作成され、外部からHTTPリクエストでLambda関数を呼び出すことができるようになります。エンドポイントのURLは、デプロイ完了時にコンソールに出力されます。
+バックエンドのデプロイが完了したら、フロントエンドのチャット画面を起動します。
 
-以下は、`curl`コマンドを使ってAPIエンドポイントの動作をテストする例です。
+1.  **Viteプロキシ設定の更新:**
+    `frontend/vite.config.ts` ファイルを開き、`target` をご自身のAPI GatewayエンドポイントURLに設定してください。（この作業はすでに行われています）
 
-```bash
-# YOUR_API_ENDPOINT_URL を、デプロイ時に出力されたURLに置き換えてください
-curl -X POST -H "Content-Type: application/json" \
--d '{"inputTranscript": "こんにちは、あなたの名前は？"}' \
-YOUR_API_ENDPOINT_URL
-```
+2.  **フロントエンド用の依存関係をインストール:**
+    ```bash
+    cd frontend
+    npm install
+    ```
+
+3.  **開発サーバーの起動:**
+    ```bash
+    npm run dev
+    ```
+    サーバーが起動したら、コンソールに表示されるURL（通常は `http://localhost:5173`）にブラウザでアクセスしてください。チャット画面が表示されます。
+
+## 本日の更新内容 (Development Log)
+
+*   **フロントエンドアプリケーションの構築:** ReactとViteを使用して、ユーザーがメッセージを入力し、AIからの応答を表示するUIを構築しました。
+*   **バックエンドAPIとの連携:**
+    *   当初、フロントエンドとバックエンドのAPI仕様（リクエスト/レスポンス形式）が異なっていましたが、フロントエンド側を修正してバックエンドの仕様に合わせました。
+    *   開発サーバーからAWS上のAPIを呼び出す際に発生するCORSエラーと404エラーを解決しました。
+        *   **CORS対応:** バックエンド(CDK)側にCORS許可設定を追加しました。
+        *   **プロキシ設定:** フロントエンド(Vite)にプロキシを設定し、APIリクエストが正しくバックエンドに転送されるようにしました。
+*   **READMEの更新:** フロントエンドの起動方法や、ここまでの開発経緯を反映させました。
 
 ## セキュリティに関する注意
 
@@ -93,9 +118,11 @@ YOUR_API_ENDPOINT_URL
 
 今後の開発・改善タスクを優先度順に記載します。
 
-1.  **Pythonバージョンアップ対応（計画）**
+1.  **フロントエンドのAWSへのデプロイ (S3 + CloudFront)**
+    *   現在ローカルで動作しているフロントエンドアプリケーションを、Amazon S3とCloudFrontを利用してAWS上にデプロイし、インターネットからアクセス可能にします。
+2.  **Pythonバージョンアップ対応（計画）**
     *   現在Python 3.9でデプロイされているLambda関数のランタイムを、AWS推奨のPython 3.12へアップグレードする計画です。
-    *   **対応予定手順:** 
+    *   **対応予定手順:**
         1.  **CDKコードの更新**: `my_cdk_lambda_project/my_cdk_lambda_project_stack.py` 内のLambdaランタイムを `lambda_.Runtime.PYTHON_3_12` に変更します。
         2.  **開発環境のPython更新**: 
             *   開発環境にPython 3.12をインストールします。
@@ -109,19 +136,11 @@ YOUR_API_ENDPOINT_URL
             *   仮想環境を有効化し (`source .venv/bin/activate`)、必要な依存関係を再インストールします (`pip install -r requirements.txt`)。
         3.  **Lambda関数の依存関係更新**: `A-rin_lambda/requirements.txt` に記載のライブラリがPython 3.12に対応しているか確認し、必要に応じて更新します。
         4.  **CDKの再デプロイ**: `cdk deploy` を実行し、Lambda関数のランタイム変更をAWS環境に反映させます。
-
-2.  **必要に応じてAPI Gatewayを追加し、外部からアクセス可能にする**
-    *   チャットボットをWebサイトや外部アプリケーションから利用可能にするためのAPIエンドポイントを構築します。
-
-3.  **`README.md` の内容を最終調整し、スクリーンショットを追加する**
-    *   プロジェクトの完成度に合わせて、より詳細な説明や、動作画面のスクリーンショットなどを追加してドキュメントを充実させます。
-
+3.  **設定管理の改善（将来的な課題）**
+    *   現在、モデル名などの設定を簡単のために`config.json`ファイルに記述していますが、これは一時的な措置です。
+    *   本番環境やチームでの開発を見据える場合、設定値は環境変数や、AWS Systems Manager Parameter Store、AWS Secrets Managerといった、よりセキュアで管理しやすい方法に移行することを推奨します。
 4.  **プロジェクト完了後、AWSリソースをクリーンアップする**
     *   不要なコスト発生を防ぐため、開発・検証が完了したら`cdk destroy`コマンドを実行して、作成したすべてのAWSリソースを削除します。
         ```bash
         cdk destroy --all
         ```
-
-5.  **設定管理の改善（将来的な課題）**
-    *   現在、モデル名などの設定を簡単のために`config.json`ファイルに記述していますが、これは一時的な措置です。
-    *   本番環境やチームでの開発を見据える場合、設定値は環境変数や、AWS Systems Manager Parameter Store、AWS Secrets Managerといった、よりセキュアで管理しやすい方法に移行することを推奨します。
