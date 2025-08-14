@@ -118,9 +118,11 @@
 
 今後の開発・改善タスクを優先度順に記載します。
 
-1.  **フロントエンドのAWSへのデプロイ (S3 + CloudFront)**
+1.  **Geminiのシステムプロンプトを使用したペルソナ設定機能の実装**
+    *   バックエンド（Lambda関数）を修正し、フロントエンドから渡されるペルソナ情報（例: "gal", "calm_sister"）をGemini APIのシステムプロンプトとして利用できるようにします。これにより、AIの応答スタイルを動的に変更できるようになります。
+2.  **フロントエンドのAWSへのデプロイ (S3 + CloudFront)**
     *   現在ローカルで動作しているフロントエンドアプリケーションを、Amazon S3とCloudFrontを利用してAWS上にデプロイし、インターネットからアクセス可能にします。
-2.  **Pythonバージョンアップ対応（計画）**
+3.  **Pythonバージョンアップ対応（計画）**
     *   現在Python 3.9でデプロイされているLambda関数のランタイムを、AWS推奨のPython 3.12へアップグレードする計画です。
     *   **対応予定手順:**
         1.  **CDKコードの更新**: `my_cdk_lambda_project/my_cdk_lambda_project_stack.py` 内のLambdaランタイムを `lambda_.Runtime.PYTHON_3_12` に変更します。
@@ -136,10 +138,10 @@
             *   仮想環境を有効化し (`source .venv/bin/activate`)、必要な依存関係を再インストールします (`pip install -r requirements.txt`)。
         3.  **Lambda関数の依存関係更新**: `A-rin_lambda/requirements.txt` に記載のライブラリがPython 3.12に対応しているか確認し、必要に応じて更新します。
         4.  **CDKの再デプロイ**: `cdk deploy` を実行し、Lambda関数のランタイム変更をAWS環境に反映させます。
-3.  **設定管理の改善（将来的な課題）**
+4.  **設定管理の改善（将来的な課題）**
     *   現在、モデル名などの設定を簡単のために`config.json`ファイルに記述していますが、これは一時的な措置です。
     *   本番環境やチームでの開発を見据える場合、設定値は環境変数や、AWS Systems Manager Parameter Store、AWS Secrets Managerといった、よりセキュアで管理しやすい方法に移行することを推奨します。
-4.  **プロジェクト完了後、AWSリソースをクリーンアップする**
+5.  **プロジェクト完了後、AWSリソースをクリーンアップする**
     *   不要なコスト発生を防ぐため、開発・検証が完了したら`cdk destroy`コマンドを実行して、作成したすべてのAWSリソースを削除します。
         ```bash
         cdk destroy --all
