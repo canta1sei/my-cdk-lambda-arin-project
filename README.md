@@ -146,3 +146,5 @@
         ```bash
         cdk destroy --all
         ```
+## 画面（ローカル実装済み）
+        <img width="740" height="685" alt="image" src="https://github.com/user-attachments/assets/090ad197-db82-478d-96e7-5c10674f6eb3" />
